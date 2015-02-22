@@ -223,7 +223,25 @@ void OGAPIENTRY glutSetCursor( int cursorID )
         }
 
 #elif TARGET_HOST_WIN32 || TARGET_HOST_WINCE
+#ifdef _WIN64
+    /* This is a temporary solution only... */
+    /* Set the cursor AND change it for this window class. */
+#       define MAP_CURSOR(a,b)                                   \
+        case a:                                                  \
+            SetCursor( LoadCursor( NULL, b ) );                  \
+            SetClassLongPtr( ogStructure.Window->Window.Handle,  \
+                          GCLP_HCURSOR,                          \
+                          ( LONG )LoadCursor( NULL, b ) );       \
+        break;
 
+    /* Nuke the cursor AND change it for this window class. */
+#       define ZAP_CURSOR(a,b)                                   \
+        case a:                                                  \
+            SetCursor( NULL );                                   \
+            SetClassLongPtr( ogStructure.Window->Window.Handle,  \
+                          GCLP_HCURSOR, ( LONG )NULL );          \
+        break;
+#else
     /* This is a temporary solution only... */
     /* Set the cursor AND change it for this window class. */
 #       define MAP_CURSOR(a,b)                                   \
@@ -241,6 +259,7 @@ void OGAPIENTRY glutSetCursor( int cursorID )
             SetClassLong( ogStructure.Window->Window.Handle,     \
                           GCL_HCURSOR, ( LONG )NULL );           \
         break;
+#endif
 
         switch( cursorID )
         {
